@@ -12,9 +12,9 @@ BeforeYouVisit is deployed to AKS in Central India.
 | AKS management tier | Free |
 | Node pool | 2 × `Standard_D2as_v4` Linux nodes |
 | Application replicas | 1 |
-| Service | Standard LoadBalancer, port 8080 |
-| Application URL | `http://40.81.254.115:8080` |
-| Health URL | `http://40.81.254.115:8080/actuator/health` |
+| Service | Standard LoadBalancer, public port 80 → application port 8080 |
+| Application URL | `http://40.81.254.115` |
+| Health URL | `http://40.81.254.115/actuator/health` |
 
 The original two-node `Standard_D4as_v5` design required eight vCPUs and could not fit the subscription's six-vCPU regional quota. The deployed non-B-series alternative uses two 2-vCPU D2as v4 nodes, consuming four regional vCPUs and the available four DASv4-family vCPUs. The node pool uses 30 GiB ephemeral OS disks, so no managed OS disks are retained for the node pool.
 
@@ -58,7 +58,7 @@ The GitHub repository contains `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_
 ## Verify and operate
 
 ```bash
-curl http://40.81.254.115:8080/actuator/health
+curl http://40.81.254.115/actuator/health
 ./infra/azure/status.sh
 ./infra/azure/stop.sh
 ./infra/azure/start.sh

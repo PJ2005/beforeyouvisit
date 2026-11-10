@@ -88,7 +88,7 @@ jobs:
       - name: Verify application health
         run: |
           set -euo pipefail
-          kubectl port-forward service/beforeyouvisit 18080:8080 >/tmp/beforeyouvisit-port-forward.log 2>&1 &
+          kubectl port-forward service/beforeyouvisit 18080:80 >/tmp/beforeyouvisit-port-forward.log 2>&1 &
           port_forward_pid=$!
           trap 'kill "$port_forward_pid"' EXIT
           for attempt in {1..20}; do

@@ -112,6 +112,6 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for additional Docker, Minikube, and Azure de
 
 ## Azure AKS cost gate
 
-BeforeYouVisit is deployed to the quota-compatible Central India AKS configuration: two `Standard_D2as_v4` nodes, one application replica, public LoadBalancer service, and a public GHCR image. The application is available at `http://40.81.254.115:8080` and the health endpoint is `http://40.81.254.115:8080/actuator/health`.
+BeforeYouVisit is deployed to the quota-compatible Central India AKS configuration: two `Standard_D2as_v4` nodes, one application replica, public LoadBalancer service, and a public GHCR image. The application is available at `http://40.81.254.115` and the health endpoint is `http://40.81.254.115/actuator/health`.
 
 The known 72-hour subtotal is approximately $9.32 before variable Load Balancer/data-transfer usage. Azure for Students does not support the attempted Cost Management budget, so monitor the subscription manually and run `./infra/azure/destroy.sh` after the three-day demonstration. See [the Azure deployment guide](docs/azure-deployment.md) for the architecture, CI/CD OIDC configuration, verification, and safe start/stop/destroy scripts.
