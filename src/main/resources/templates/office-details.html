@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${office.name} + ' | BeforeYouVisit'">Office | BeforeYouVisit</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <script th:src="@{/js/checklist.js}" defer></script>
+</head>
+<body th:attr="data-office-id=${office.id}">
+<header class="site-header"><a class="brand" th:href="@{/}"><span class="brand-mark">✓</span> BeforeYouVisit</a><nav><a th:href="@{/}">All offices</a></nav></header>
+<main class="details-page">
+    <a class="back-link" th:href="@{/}">← Back to offices</a>
+    <section class="office-intro">
+        <p class="eyebrow">OFFICE VISIT GUIDE</p>
+        <h1 th:text="${office.name}">Registrar</h1>
+        <p th:text="${office.description}">Description</p>
+        <div class="info-pills"><div><span>Hours</span><strong th:text="${office.timings}">Hours</strong></div><div><span>Location</span><strong th:text="${office.location}">Location</strong></div></div>
+    </section>
+    <div class="details-grid">
+        <div class="main-detail">
+            <section class="notice"><span aria-hidden="true">i</span><div><h2>Before you go</h2><p th:text="${office.instructions}">Instructions</p></div></section>
+            <section class="content-section"><p class="eyebrow">YOUR CHECKLIST</p><div class="checklist-title"><h2>Required documents</h2><span id="progressText">0 of 0 ready</span></div><div class="progress-track"><div id="progressBar"></div></div>
+                <div class="checklist" id="checklist">
+                    <label class="check-item" th:each="document, state : ${office.requiredDocuments}">
+                        <input type="checkbox" th:id="'document-' + ${state.index}" th:value="${document}"><span class="custom-check" aria-hidden="true">✓</span><span th:text="${document}">Document</span>
+                    </label>
+                </div>
+            </section>
+            <section class="content-section"><p class="eyebrow">AT THE OFFICE</p><h2>Follow these steps</h2><ol class="visit-steps"><li th:each="step : ${office.visitSteps}" th:text="${step}">Step</li></ol></section>
+        </div>
+        <aside class="report-card"><p class="eyebrow">KEEP IT CURRENT</p><h2>Spot something inaccurate?</h2><p>Tell us about outdated information so future visitors can prepare better.</p>
+            <div th:if="${reportSuccess}" class="alert success" th:text="${reportSuccess}"></div><div th:if="${reportError}" class="alert error" th:text="${reportError}"></div>
+            <form th:action="@{/reports}" th:object="${reportForm}" method="post">
+                <input type="hidden" th:field="*{officeId}">
+                <label for="issueType">What needs updating?</label><select id="issueType" th:field="*{issueType}" required><option value="">Choose an issue</option><option value="Incorrect timings">Incorrect timings</option><option value="Missing documents">Missing documents</option><option value="Outdated instructions">Outdated instructions</option><option value="Something else">Something else</option></select>
+                <label for="details">Details</label><textarea id="details" th:field="*{details}" rows="5" maxlength="2000" required placeholder="What should visitors know?"></textarea>
+                <button class="button button-primary full-width" type="submit">Send report</button>
+            </form>
+        </aside>
+    </div>
+</main>
+<footer><span>BeforeYouVisit</span><span>Plan ahead, visit confidently.</span></footer>
+</body>
+</html>

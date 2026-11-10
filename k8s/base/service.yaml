@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: beforeyouvisit
+  labels:
+    app.kubernetes.io/name: beforeyouvisit
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: beforeyouvisit
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http

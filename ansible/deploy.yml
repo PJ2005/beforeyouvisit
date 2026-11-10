@@ -1,0 +1,18 @@
+---
+- name: Apply BeforeYouVisit Kubernetes manifests
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    deployment_target: minikube
+  tasks:
+    - name: Apply the selected Kustomize overlay using the current kubectl context
+      ansible.builtin.command:
+        cmd: kubectl apply -k k8s/overlays/{{ deployment_target }}
+        chdir: "{{ playbook_dir }}/.."
+      register: kubectl_apply
+      changed_when: "'created' in kubectl_apply.stdout or 'configured' in kubectl_apply.stdout"
+
+    - name: Show kubectl output
+      ansible.builtin.debug:
+        var: kubectl_apply.stdout_lines
