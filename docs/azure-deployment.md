@@ -1,94 +1,73 @@
-# Azure AKS deployment assessment
+# Azure AKS deployment
 
-## Preflight result: blocked, no Azure resources created
+## Live deployment
 
-Preflight was performed on 2026-11-10 against the active **Azure for Students** subscription `ce7e699c-b870-4538-8a1a-f1eebee2e57e`. The active subscription matched the requested subscription and is enabled. Central India supports AKS managed clusters.
+BeforeYouVisit is deployed to AKS in Central India.
 
-The requested cluster cannot be created under the current quota:
+| Resource | Value |
+| --- | --- |
+| Resource group | `rg-beforeyouvisit` |
+| AKS cluster | `aks-beforeyouvisit` |
+| Managed node resource group | `MC_rg-beforeyouvisit_aks-beforeyouvisit_centralindia` |
+| AKS management tier | Free |
+| Node pool | 2 × `Standard_D2as_v4` Linux nodes |
+| Application replicas | 1 |
+| Service | Standard LoadBalancer, port 8080 |
+| Application URL | `http://40.81.254.115:8080` |
+| Health URL | `http://40.81.254.115:8080/actuator/health` |
 
-| Requirement | Required | Current Central India quota | Result |
-| --- | ---: | ---: | --- |
-| Total regional vCPUs | 8 (two 4-vCPU nodes) | 6 | Blocked |
-| Standard DASv5 family vCPUs | 8 | 0 | Blocked |
-| `Standard_D4as_v5` | 2 nodes | no family quota | Blocked |
+The original two-node `Standard_D4as_v5` design required eight vCPUs and could not fit the subscription's six-vCPU regional quota. The deployed non-B-series alternative uses two 2-vCPU D2as v4 nodes, consuming four regional vCPUs and the available four DASv4-family vCPUs. The node pool uses 30 GiB ephemeral OS disks, so no managed OS disks are retained for the node pool.
 
-No resource group, AKS cluster, public IP, load balancer, budget, service principal, or Azure role assignment was created. The `rg-beforeyouvisit` resource group does not exist.
-
-To proceed with the specified two-node design, request at least **8 total regional vCPUs** and **8 Standard DASv5 family vCPUs** for Central India, then rerun the preflight. SKU capacity is also dynamic and must be checked again immediately before provisioning. Do not use B-series nodes for the AKS system pool.
-
-## 72-hour cost estimate
-
-The Azure Retail Prices API returned a Central India Linux `Standard_D4as_v5` PAYG rate of **$0.111/hour**.
-
-| Item | Basis | 72-hour estimate (USD) |
-| --- | --- | ---: |
-| Two Linux `Standard_D4as_v5` worker VMs | 2 × $0.111 × 72 hours | $15.98 |
-| One Standard IPv4 static public IP | $0.005 × 72 hours | $0.36 |
-| OS disks | $0 if ephemeral OS disks are confirmed; otherwise depends on the selected managed-disk SKU | Not verified |
-| Standard Load Balancer and outbound/data processing | usage-dependent | Not verified |
-| AKS Free management tier | control-plane management tier | $0 management fee |
-
-The partial subtotal is **$16.34**, but it is **not an approval to deploy**: disk support, load-balancer/data charges, and current SKU capacity were not reliably verified, and the required quota is unavailable. This preserves the requested $45 planning ceiling and $30 credit reserve by preventing resource creation.
-
-## Intended architecture after a passing preflight
+## Architecture
 
 ```text
 Browser → AKS LoadBalancer Service → BeforeYouVisit pod (1 replica, port 8080)
                                       └─ H2 in-memory database
-GitHub Actions → GHCR image → AKS Deployment update
+GitHub Actions → public GHCR image → AKS Deployment update
 ```
 
-The repository already contains one-replica Deployment, ConfigMap, Service, probes, resource limits, `APP_VERSION`, and non-root security settings. The AKS overlay changes the Service to `LoadBalancer`; Minikube remains `ClusterIP` with port-forwarding.
+The Kubernetes Deployment has readiness and liveness probes, CPU/memory requests and limits, `APP_VERSION`, and non-root pod and container security settings. H2 remains in memory and has no persistent disk.
 
-## Authentication and GitHub Actions
+## Cost planning
 
-The workflow uses Java **25**, not Java 21, because this project is configured to compile with Java 25. It publishes `ghcr.io/pj2005/beforeyouvisit:<commit-sha>` and uses Azure OIDC for `main` deployments.
+The current Central India Linux PAYG rate returned by the Azure Retail Prices API for `Standard_D2as_v4` was $0.0622/hour.
 
-When Azure preflight passes, configure these GitHub repository secrets:
+| Item | Basis | 72-hour estimate (USD) |
+| --- | --- | ---: |
+| Two D2as v4 Linux nodes | 2 × $0.0622 × 72 hours | $8.96 |
+| One Standard IPv4 static public IP | $0.005 × 72 hours | $0.36 |
+| Ephemeral OS disks | node pool configuration | $0.00 |
+| AKS Free management tier | control-plane management tier | $0.00 management fee |
+| Load Balancer/data transfer | usage-dependent | additional variable charge |
 
-- `AZURE_CLIENT_ID`
-- `AZURE_TENANT_ID`
-- `AZURE_SUBSCRIPTION_ID`
+Known fixed-cost subtotal: **$9.32** for 72 hours, plus load-balancer/data-transfer usage. This is below the $45 planning ceiling, but prices and usage can change.
 
-Configure these repository variables:
+Azure Budget creation was attempted for a $45 resource-group budget with 50%, 75%, and 90% actual-spend alerts. Azure rejected the request because Azure for Students offer `MS-AZR-0170P` does not support Cost Management budgets. No budget or notifications exist. Check Cost Management manually during the demonstration; a budget is monitoring only and never a hard spending cap.
 
-- `AKS_RESOURCE_GROUP=rg-beforeyouvisit`
-- `AKS_CLUSTER_NAME=aks-beforeyouvisit`
+## GitHub Actions and OIDC
 
-Create a Microsoft Entra application/service principal and federated credential restricted to `repo:<owner>/<repository>:ref:refs/heads/main`. Grant it the least Azure permissions necessary to obtain AKS user credentials. Kubernetes RBAC must independently allow updating the `beforeyouvisit` Deployment. Do not grant subscription-wide Owner or Contributor. GHCR must be public or AKS must have a namespace image-pull secret; never commit registry credentials.
+The workflow at `.github/workflows/ci-cd.yml` runs on every push to `main`:
 
-## Deployment and verification after approval
+1. Uses Java 25 and runs `mvn clean verify`.
+2. Builds and publishes `ghcr.io/pj2005/beforeyouvisit:<commit-sha>`.
+3. Authenticates to Azure with GitHub OIDC—no client secret is stored.
+4. Installs `kubelogin`, connects to the Entra-enabled AKS cluster, applies the AKS overlay, sets the SHA-tagged image, waits for rollout, and verifies health.
 
-After quota and cost preflight pass, deploy the AKS overlay and verify the rollout:
+The GitHub repository contains `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID` secrets plus `AKS_RESOURCE_GROUP` and `AKS_CLUSTER_NAME` variables. The federated identity is restricted to the `main` branch and has only AKS Cluster User plus AKS RBAC Writer roles at the AKS cluster scope. The public GHCR package avoids an image-pull secret.
 
-```bash
-kubectl apply -k k8s/overlays/aks
-kubectl rollout status deployment/beforeyouvisit --timeout=180s
-kubectl get service beforeyouvisit --watch
-```
-
-When the Service receives an external IP:
-
-```bash
-curl http://<external-ip>:8080/actuator/health
-```
-
-If a public load balancer is rejected by the cost gate, retain `ClusterIP` and use:
+## Verify and operate
 
 ```bash
-kubectl port-forward service/beforeyouvisit 8080:8080
-curl http://localhost:8080/actuator/health
-```
-
-## Cost control and cleanup
-
-The cleanup scripts are intentionally not run automatically:
-
-```bash
+curl http://40.81.254.115:8080/actuator/health
 ./infra/azure/status.sh
 ./infra/azure/stop.sh
 ./infra/azure/start.sh
+```
+
+Stopping AKS does not necessarily stop charges for retained networking resources or public IPs. Delete the resource group after the three-day demonstration to stop project charges:
+
+```bash
 ./infra/azure/destroy.sh
 ```
 
-Stopping AKS does not necessarily stop charges for retained networking resources, disks, or public IPs. Delete the entire resource group after the three-day demonstration to stop ongoing project charges. Azure budgets are monitoring alerts, not hard spending caps; a $45 resource-group budget with 50%, 75%, and 90% notifications should be created only after a valid notification recipient can be safely identified.
+The destroy script requires typing the resource-group name and is never invoked automatically.

@@ -112,6 +112,6 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for additional Docker, Minikube, and Azure de
 
 ## Azure AKS cost gate
 
-The requested Central India two-node AKS deployment was **not created**. Its current quota is 6 total regional vCPUs and 0 DASv5-family vCPUs, while two `Standard_D4as_v5` nodes require 8 of each. This is an intentional cost and quota safety stop; no Azure resources or budget alerts were created.
+BeforeYouVisit is deployed to the quota-compatible Central India AKS configuration: two `Standard_D2as_v4` nodes, one application replica, public LoadBalancer service, and a public GHCR image. The application is available at `http://40.81.254.115:8080` and the health endpoint is `http://40.81.254.115:8080/actuator/health`.
 
-See [the Azure deployment assessment](docs/azure-deployment.md) for the measured quota, partial 72-hour price estimate, required quota request, OIDC setup, and safe start/stop/destroy scripts.
+The known 72-hour subtotal is approximately $9.32 before variable Load Balancer/data-transfer usage. Azure for Students does not support the attempted Cost Management budget, so monitor the subscription manually and run `./infra/azure/destroy.sh` after the three-day demonstration. See [the Azure deployment guide](docs/azure-deployment.md) for the architecture, CI/CD OIDC configuration, verification, and safe start/stop/destroy scripts.
