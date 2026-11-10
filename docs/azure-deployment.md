@@ -42,7 +42,7 @@ The repository already contains one-replica Deployment, ConfigMap, Service, prob
 
 ## Authentication and GitHub Actions
 
-The workflow uses Java **25**, not Java 21, because this project is configured to compile with Java 25. It publishes `ghcr.io/<owner>/<repository>:<commit-sha>` and uses Azure OIDC for `main` deployments.
+The workflow uses Java **25**, not Java 21, because this project is configured to compile with Java 25. It publishes `ghcr.io/pj2005/beforeyouvisit:<commit-sha>` and uses Azure OIDC for `main` deployments.
 
 When Azure preflight passes, configure these GitHub repository secrets:
 

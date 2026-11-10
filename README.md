@@ -66,7 +66,7 @@ ansible-playbook ansible/deploy.yml -e deployment_target=minikube
 Every push runs `.github/workflows/ci-cd.yml`. It checks out the source, uses Java 25, executes `mvn clean verify`, and builds and publishes a Docker image to GHCR with the full commit SHA as its tag:
 
 ```
-ghcr.io/<owner>/<repository>:<commit-sha>
+ghcr.io/pj2005/beforeyouvisit:<commit-sha>
 ```
 
 Only a push to `main`, after the build-and-push job succeeds, runs the AKS deployment job. That job authenticates to Azure using OIDC, retrieves AKS credentials, updates the `beforeyouvisit` Deployment image, waits for the rollout, and verifies `/actuator/health` through a temporary port-forward.
@@ -97,7 +97,7 @@ For a manual AKS deploy, authenticate to Azure, get the cluster context, and upd
 ```bash
 az login
 az aks get-credentials --resource-group <resource-group> --name <aks-cluster-name>
-kubectl set image deployment/beforeyouvisit beforeyouvisit=ghcr.io/<owner>/<repository>:<commit-sha>
+kubectl set image deployment/beforeyouvisit beforeyouvisit=ghcr.io/pj2005/beforeyouvisit:<commit-sha>
 kubectl rollout status deployment/beforeyouvisit --timeout=180s
 kubectl port-forward service/beforeyouvisit 8080:8080
 ```

@@ -5,7 +5,9 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ghcr.io/${{ github.repository }}
+  # OCI repository paths must be lowercase. This is the canonical GHCR path
+  # for the PJ2005/beforeyouvisit repository.
+  IMAGE_NAME: ghcr.io/pj2005/beforeyouvisit
 
 permissions:
   contents: read
