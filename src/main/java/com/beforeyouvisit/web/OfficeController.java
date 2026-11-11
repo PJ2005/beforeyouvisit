@@ -39,6 +39,7 @@ public class OfficeController {
     public String office(@PathVariable Long id, Model model) {
         model.addAttribute("office", officeService.findById(id));
         model.addAttribute("reportForm", new ReportForm(id, "", ""));
+        model.addAttribute("recentReports", reportService.findRecentForOffice(id));
         return "office-details";
     }
 
@@ -48,8 +49,9 @@ public class OfficeController {
         if (bindingResult.hasErrors()) {
             redirectAttributes.addFlashAttribute("reportError", "Please choose an issue and describe what needs updating.");
         } else {
-            reportService.submit(form.officeId(), form.issueType(), form.details());
-            redirectAttributes.addFlashAttribute("reportSuccess", "Thanks — your report has been saved for review.");
+            var report = reportService.submit(form.officeId(), form.issueType(), form.details());
+            redirectAttributes.addFlashAttribute("reportSuccess", "Report #" + report.getId() + " has been saved.");
+            redirectAttributes.addFlashAttribute("reportId", report.getId());
         }
         return "redirect:/offices/" + form.officeId();
     }

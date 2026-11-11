@@ -26,4 +26,10 @@ public class Report {
         this.details = details;
         this.submittedAt = LocalDateTime.now();
     }
+
+    public Long getId() { return id; }
+    public Long getOfficeId() { return officeId; }
+    public String getIssueType() { return issueType; }
+    public String getDetails() { return details; }
+    public LocalDateTime getSubmittedAt() { return submittedAt; }
 }

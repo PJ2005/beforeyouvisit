@@ -17,10 +17,15 @@
         <p th:text="${office.description}">Description</p>
         <div class="info-pills"><div><span>Hours</span><strong th:text="${office.timings}">Hours</strong></div><div><span>Location</span><strong th:text="${office.location}">Location</strong></div></div>
     </section>
+    <section class="visit-plan" aria-label="How to use this visit guide">
+        <div><span class="plan-number">1</span><div><strong>Check the office details</strong><p>Confirm the hours and location before leaving.</p></div></div>
+        <div><span class="plan-number">2</span><div><strong>Mark what you have</strong><p>Your checklist stays saved on this browser.</p></div></div>
+        <div><span class="plan-number">3</span><div><strong>Use the steps at the office</strong><p>Follow the visit sequence when you arrive.</p></div></div>
+    </section>
     <div class="details-grid">
         <div class="main-detail">
             <section class="notice"><span aria-hidden="true">i</span><div><h2>Before you go</h2><p th:text="${office.instructions}">Instructions</p></div></section>
-            <section class="content-section"><p class="eyebrow">YOUR CHECKLIST</p><div class="checklist-title"><h2>Required documents</h2><span id="progressText">0 of 0 ready</span></div><div class="progress-track"><div id="progressBar"></div></div>
+            <section class="content-section"><p class="eyebrow">YOUR CHECKLIST</p><div class="checklist-title"><div><h2>Required documents</h2><p class="section-help">Tick each item only after you have it ready to take with you.</p></div><span id="progressText">0 of 0 ready</span></div><div class="progress-track"><div id="progressBar"></div></div><p class="checklist-status" id="checklistStatus" aria-live="polite">Your checklist is saved on this browser.</p>
                 <div class="checklist" id="checklist">
                     <label class="check-item" th:each="document, state : ${office.requiredDocuments}">
                         <input type="checkbox" th:id="'document-' + ${state.index}" th:value="${document}"><span class="custom-check" aria-hidden="true">✓</span><span th:text="${document}">Document</span>
@@ -29,14 +34,15 @@
             </section>
             <section class="content-section"><p class="eyebrow">AT THE OFFICE</p><h2>Follow these steps</h2><ol class="visit-steps"><li th:each="step : ${office.visitSteps}" th:text="${step}">Step</li></ol></section>
         </div>
-        <aside class="report-card"><p class="eyebrow">KEEP IT CURRENT</p><h2>Spot something inaccurate?</h2><p>Tell us about outdated information so future visitors can prepare better.</p>
-            <div th:if="${reportSuccess}" class="alert success" th:text="${reportSuccess}"></div><div th:if="${reportError}" class="alert error" th:text="${reportError}"></div>
+        <aside class="report-card"><p class="eyebrow">KEEP IT CURRENT</p><h2>Spot something inaccurate?</h2><p>Use this form only to flag information on this page. It saves a report for review; it does not change office information immediately.</p>
+            <div th:if="${reportSuccess}" class="report-receipt" role="status"><span class="receipt-mark">✓</span><div><strong th:text="${reportSuccess}">Report saved.</strong><p>Your submission is stored in the application database and is listed below as “Awaiting review”.</p></div></div><div th:if="${reportError}" class="alert error" th:text="${reportError}"></div>
             <form th:action="@{/reports}" th:object="${reportForm}" method="post">
                 <input type="hidden" th:field="*{officeId}">
                 <label for="issueType">What needs updating?</label><select id="issueType" th:field="*{issueType}" required><option value="">Choose an issue</option><option value="Incorrect timings">Incorrect timings</option><option value="Missing documents">Missing documents</option><option value="Outdated instructions">Outdated instructions</option><option value="Something else">Something else</option></select>
                 <label for="details">Details</label><textarea id="details" th:field="*{details}" rows="5" maxlength="2000" required placeholder="What should visitors know?"></textarea>
-                <button class="button button-primary full-width" type="submit">Send report</button>
+                <button class="button button-primary full-width" type="submit">Save report for review</button>
             </form>
+            <section class="feedback-log" aria-labelledby="feedbackLogTitle"><div class="feedback-log-heading"><div><p class="eyebrow">SAVED REPORTS</p><h3 id="feedbackLogTitle">Feedback for this office</h3></div><span th:text="${#lists.size(recentReports)} + ' recent'">0 recent</span></div><p class="feedback-help">Reports are recorded here with a reference number and are awaiting review.</p><div class="empty-feedback" th:if="${#lists.isEmpty(recentReports)}">No reports have been submitted for this office yet.</div><ol class="feedback-items" th:unless="${#lists.isEmpty(recentReports)}"><li th:each="report : ${recentReports}"><div><strong th:text="'Report #' + ${report.id}">Report #1</strong><span th:text="${report.issueType}">Incorrect timings</span></div><time th:text="${#temporals.format(report.submittedAt, 'dd MMM, HH:mm')}">10 Nov, 12:30</time><p th:text="${report.details}">Report details</p><small>Awaiting review</small></li></ol></section>
         </aside>
     </div>
 </main>

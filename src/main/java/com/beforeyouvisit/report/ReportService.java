@@ -1,5 +1,6 @@
 package com.beforeyouvisit.report;
 
+import java.util.List;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -10,7 +11,11 @@ public class ReportService {
         this.reportRepository = reportRepository;
     }
 
-    public void submit(Long officeId, String issueType, String details) {
-        reportRepository.save(new Report(officeId, issueType, details.trim()));
+    public Report submit(Long officeId, String issueType, String details) {
+        return reportRepository.save(new Report(officeId, issueType, details.trim()));
+    }
+
+    public List<Report> findRecentForOffice(Long officeId) {
+        return reportRepository.findTop5ByOfficeIdOrderBySubmittedAtDesc(officeId);
     }
 }
