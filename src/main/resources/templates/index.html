@@ -1,50 +1,12 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BeforeYouVisit | Plan your office visit</title>
-    <link rel="stylesheet" th:href="@{/css/styles.css}">
-</head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>BeforeYouVisit</title><link rel="stylesheet" th:href="@{/css/styles.css}"></head>
 <body>
-<header class="site-header">
-    <a class="brand" th:href="@{/}"><span class="brand-mark">✓</span> BeforeYouVisit</a>
-    <nav aria-label="Primary navigation"><a th:href="@{/#offices}">Offices</a><a th:href="@{/#how-it-works}">How it works</a></nav>
-</header>
-<main>
-    <section class="hero">
-        <div>
-            <p class="eyebrow">VISIT PREP, MADE SIMPLE</p>
-            <h1>Walk in prepared.<br><em>Walk out relieved.</em></h1>
-            <p class="hero-copy">Everything you need before visiting a campus office: timings, documents and a clear checklist.</p>
-            <a class="button button-primary" href="#offices">Find your office <span aria-hidden="true">→</span></a>
-        </div>
-        <div class="hero-card" aria-label="Preparation checklist preview">
-            <div class="hero-card-top"><span>YOUR VISIT</span><span class="status">Ready</span></div>
-            <h2>Bring what matters</h2>
-            <div class="mini-check"><span>✓</span> Confirm office timings</div>
-            <div class="mini-check"><span>✓</span> Gather your documents</div>
-            <div class="mini-check"><span>✓</span> Follow the checklist</div>
-        </div>
-    </section>
-    <section id="offices" class="office-section">
-        <div class="section-heading"><div><p class="eyebrow">OFFICE DIRECTORY</p><h2>Choose where you’re going</h2></div><p>Start with the office that can help with your request.</p></div>
-        <div class="office-grid">
-            <article class="office-card" th:each="office, state : ${offices}">
-                <div class="card-icon" th:text="${state.index == 0 ? 'R' : state.index == 1 ? 'A' : 'L'}">R</div>
-                <h3 th:text="${office.name}">Registrar</h3>
-                <p th:text="${office.description}">Office description</p>
-                <dl>
-                    <div><dt>Hours</dt><dd th:text="${office.timings}">Hours</dd></div>
-                    <div><dt>Location</dt><dd th:text="${office.location}">Location</dd></div>
-                </dl>
-                <a class="card-link" th:href="@{/offices/{id}(id=${office.id})}">View visit details <span>→</span></a>
-            </article>
-        </div>
-    </section>
-    <section id="how-it-works" class="steps-band">
-        <p class="eyebrow">A BETTER WAY TO PREPARE</p>
-        <div class="process"><div><strong>01</strong><h3>Pick an office</h3><p>Find the right place for your request.</p></div><div><strong>02</strong><h3>Check requirements</h3><p>See timings, instructions and documents.</p></div><div><strong>03</strong><h3>Arrive ready</h3><p>Save your progress and visit with confidence.</p></div></div>
+<header class="site-header"><a class="brand" th:href="@{/}">BeforeYouVisit</a><span class="header-note">Office visit information</span></header>
+<main class="home-page">
+    <section class="page-heading"><p class="breadcrumb">Home / Office directory</p><h1>Prepare for an office visit</h1><p>Select an office to check its hours, location, documents, and visit steps. Your document checklist is saved only in this browser.</p></section>
+    <section class="directory" aria-labelledby="directory-title"><div class="section-bar"><div><h2 id="directory-title">Office directory</h2><p>Choose the office that handles your request.</p></div><span th:text="${#lists.size(offices)} + ' offices'">3 offices</span></div>
+        <div class="office-grid"><article class="office-card" th:each="office, state : ${offices}"><div class="card-heading"><span class="office-code" th:text="${state.index == 0 ? 'RG' : state.index == 1 ? 'AC' : 'LB'}">RG</span><h3 th:text="${office.name}">Registrar</h3></div><p class="office-description" th:text="${office.description}">Office description</p><dl class="office-facts"><div><dt>Office hours</dt><dd th:text="${office.timings}">Hours</dd></div><div><dt>Location</dt><dd th:text="${office.location}">Location</dd></div></dl><a class="button button-primary" th:href="@{/offices/{id}(id=${office.id})}">Open visit guide</a></article></div>
     </section>
 </main>
 <footer><span>BeforeYouVisit</span><span th:text="'Version ' + ${appVersion}">Version local</span></footer>
